@@ -1,8 +1,14 @@
+var name = "instrument";
+var aliases = ["instrumentinfo","instinfo","instinf"];
+var description = "Instrument info";
+var usage = "{prefix}instrument <instrumentid/string>";
+var enabled = true;
+
 var util = require("./../util.js");
 var instruments_map = require("./../instruments_map.json");
 var parser = require("./../parser.js");
 
-function execute(username, args, bot, handler) {// TODO: maybe blocks too but would need a better instrument map for blocks
+function execute(bot, cmd, username, args, handler) {// TODO: maybe blocks too but would need a better instrument map for blocks
     if(args.length == 0) return bot.chat(util.errorMessage(`Usage: ${handler.prefix}instrument <instrumentid/string>`));
     var joined = args.join("_").toLowerCase();
     if(isNumber(args[0])) {
@@ -31,10 +37,9 @@ function isNumber(str) {
     }
 }
 
-module.exports = {
-    aliases: ["instrument", "instrumentinfo", "instinfo", "instinf"],
-	description: "Instrument info",
-	usage: "{prefix}instrument <instrumentid/string>",
-	enabled: true,
-	execute: execute
-}
+module.exports.name = name;
+module.exports.aliases = aliases;
+module.exports.description = description;
+module.exports.usage = usage;
+module.exports.enabled = enabled;
+module.exports.execute = execute;

@@ -1,8 +1,14 @@
+var name = "stop";
+var aliases = ["cancel"];
+var description = "Stops the current song/tuning";
+var usage = "{prefix}stop";
+var enabled = true;
+
 var util = require("./../util.js");
 
 var parser = require("./../parser.js");
 
-function execute(username, args, bot, handler) {
+function execute(bot, cmd, username, args, handler) {
     if(!parser.isTuning() && !parser.isPlaying()) {
         bot.chat(util.errorMessage("No song is playing..."));
     } else if(parser.isTuning()) {
@@ -14,10 +20,9 @@ function execute(username, args, bot, handler) {
     }
 }
 
-module.exports = {
-    aliases: ["stop", "cancel"],
-	description: "Stops the current song/tuning",
-	usage: "{prefix}stop",
-	enabled: true,
-	execute: execute
-}
+module.exports.name = name;
+module.exports.aliases = aliases;
+module.exports.description = description;
+module.exports.usage = usage;
+module.exports.enabled = enabled;
+module.exports.execute = execute;

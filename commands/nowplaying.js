@@ -1,7 +1,13 @@
+var name = "nowplaying";
+var aliases = ["np","current"];
+var description = "Says info about the song that is playing";
+var usage = "{prefix}nowplaying";
+var enabled = true;
+
 var parser = require("./../parser.js");
 var util = require("./../util.js");
 
-function execute(username, args, bot, handler) {
+function execute(bot, cmd, username, args, handler) {
     if(!parser.isPlaying()) {
         bot.chat(util.infoMessage(`Bot is currently not playing anything`));
         return;
@@ -27,10 +33,9 @@ function timeToStr(time, ticks) {
     return `&b${time.h}&7h &b${time.min}&7min &b${time.sec}&7sec &b${time.ms}&7ms (&b${ticks}&7ticks)`;
 }
 
-module.exports = {
-	aliases: ["nowplaying", "np", "current"],
-	description: "Says info about the song that is playing",
-	usage: "{prefix}nowplaying",
-	enabled: true,
-	execute: execute
-}
+module.exports.name = name;
+module.exports.aliases = aliases;
+module.exports.description = description;
+module.exports.usage = usage;
+module.exports.enabled = enabled;
+module.exports.execute = execute;

@@ -1,9 +1,15 @@
+var name = "eval";
+var aliases = [];
+var description = "Evaluate nodejs code";
+var usage = "{prefix}eval <code>";
+var enabled = true;
+
 var util = require("./../util.js");
 
 var perms = require("./../config.json").eval.perms;
 var enabled = require("./../config.json").eval.enabled;
 
-function execute(username, args, bot, handler) {
+function execute(bot, cmd, username, args, handler) {
   if (!perms.includes(username))
     return bot.chat(util.errorMessage("No permisson to use this command."));
     if(!enabled) return bot.chat(util.colors(`&a>eval is currently disabled ;/`));
@@ -17,10 +23,9 @@ function execute(username, args, bot, handler) {
   });
 }
 
-module.exports = {
-  aliases: ["eval"],
-	description: "Evaluate nodejs code",
-	usage: "{prefix}eval <code>",
-	enabled: true,
-	execute: execute
-}
+module.exports.name = name;
+module.exports.aliases = aliases;
+module.exports.description = description;
+module.exports.usage = usage;
+module.exports.enabled = enabled;
+module.exports.execute = execute;

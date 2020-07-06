@@ -12,6 +12,6 @@
   "dependencies": {
     "@tonejs/midi": "^2.0.23",
     "fs": "0.0.1-security",
-    "mineflayer": "^2.20.0"
+    "mineflayer": "^2.22.1"
   }
 }

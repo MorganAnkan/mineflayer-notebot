@@ -37,7 +37,7 @@ var options = {
 }
 
 var bot = mineflayer.createBot(options);
-cmd_handler.setup();
+cmd_handler();
 
 bot.on("login", () => {
   console.log(`(${bot.username}) logged in!`);
@@ -47,6 +47,24 @@ bot.on("login", () => {
 bot.on("chat", (username, message) => {
   console.log(`[chat] <${username}> ${message}`);
 
+  if (message.startsWith(cmd_handler.prefix)) {
+    let args = message.slice(cmd_handler.prefix.length).split(" ");
+    let command = args.shift();
+
+    if (cmd_handler.isCommand(command)) {
+      let output = cmd_handler.execute(bot, command, username, args);
+
+      if (output.status == "success") {
+        if (typeof output.message == "string")
+          bot.chat(util.infoMessage(output.message));
+      } else if (output.status == "error") {
+        if (typeof output.message == "string")
+          bot.chat(util.errorMessage(output.message));
+      }
+    }
+  }
+
+  /*
 	if (message.startsWith(cmd_handler.prefix)) {
 		let args = message.split(" ");
     let command = args.shift().slice(cmd_handler.prefix.length);
@@ -59,7 +77,8 @@ bot.on("chat", (username, message) => {
 
       bot.chat(util.errorMessage(error));
     }
-	}
+  }
+  */
   
 });
 

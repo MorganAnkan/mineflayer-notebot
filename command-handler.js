@@ -1,121 +1,237 @@
 var fs = require("fs");
-var util = require("./util.js");
+var path = require("path");
 
-var prefix = "%";
-var folder = `${__dirname}/commands/`;
+var is_initilized = false;
+var commands = {};
+var categories = {};
 
-var cmds = [];
+//main functions
+function load(prefix="%", directory="./commands") {
+    //setup global variable
+    this.prefix = prefix;
+    this.directory = directory;
 
-function getCommand(cmdname) {
-  var command = null;
-  cmds.forEach((c) => {
-    if (includesArrForEach(c.aliases, cmdname)) {
-      command = c;
-    }
-  });
-  return command;
-};
+    //initiliaze command handler
+    let categories_ = [];
+    let aliases = [];
+    if (!isDirectory(directory))
+        fs.mkdirSync(directory);
+    
+    if (categories["default"] == null)
+        categories["default"] = {enabled: true, commands: {}};
+    fs.readdirSync(directory).forEach(file => {
+        let absolute_path = path.resolve(`${directory}/${file}`);
 
-function setup() {
-  if (!fs.existsSync(folder) || !fs.statSync(folder).isDirectory()) {
-    console.log(`The folder ${folder} doesnt exist creating a new one.`);
-    fs.mkdirSync(folder);
-  }
-  reloadCMDS();
+        if (isDirectory(absolute_path) && path.parse(absolute_path).name != "default") {
+            categories_.push(absolute_path);
+            return;
+        }
 
-  if (cmds.length == 0) {
-    console.log("hmm no commands were found but yes");
-  }
+        let required = loadCommand(absolute_path);
+        if (required == null)
+            return;
+        
+        if (commands[required.name] == null) {
+            commands[required.name] = required;
+            categories[required.category].commands[required.name] = required;
+        }
+        if (required.aliases.length != 0) 
+            aliases.push(required); 
+        
+    });
 
+    categories_.forEach(category => {
+        if (categories[path.parse(category).name] == null)
+            categories[path.parse(category).name] = {enabled: true, commands:{}};
+
+        fs.readdirSync(category).forEach(file => {
+            let absolute_path = path.resolve(`${category}/${file}`);
+
+            let required = loadCommand(absolute_path, path.parse(category).name);
+            if (required == null) 
+                return;
+            
+            if (commands[required.name] == null)  {
+                commands[required.name] = required;
+                categories[required.category].commands[required.name] = required;
+            }
+                
+                
+            if (required.aliases.length != 0) 
+                aliases.push(required); 
+        });
+    });
+
+    aliases.forEach(command => {
+        command.aliases.forEach(alias => {
+            if (commands[alias] == null)
+                commands[alias] = command;
+        });
+    });
+
+    is_initilized = true;
 }
 
-function reloadCMDS() {
-  cmds = [];
-  fs.readdirSync(folder).forEach((cfile) => {
+function loadCommand(absolute_path, category="default") {
+    if (!isFile(absolute_path) || path.parse(absolute_path).ext != ".js")
+        return;
+    let file = path.parse(absolute_path).base;
+
+    
     try {
-      var command = require(`${folder}/${cfile}`);
-      command.requirePath = `${folder}/${cfile}`;
-      if (isValidCommand(command)) {
-        cmds.push(command);
-      } else {
-        console.log(`invalid command file ${cfile}`);
-      }
-    } catch (e) {
-      console.log(`Failed to load cmd ${cfile}`, e);
+        let required = require(absolute_path);
+        if (!isValid(required)) {
+            console.log(`Command ${file} is invalid!`)
+            return;
+        }
+        required.path = absolute_path;
+        required.category = category;
+        
+        return required;
+    } catch (err) {
+        console.log(`Couldnt load ${file}:\n ${err}`);
+        return;
     }
-  })
 }
 
-function execute(cmd, username, args, bot) {
-  if (!fs.existsSync(folder) || !fs.statSync(folder).isDirectory()) {
-    console.log(`The folder ${folder} doesnt exist creating a new one.`);
-    fs.mkdirSync(folder);
-  }
+function execute(bot, cmd, username, args, ...custom) {
 
-  if (cmd.match(/([^a-zA-Z]+)/) != null)
-    return util.Error("Only letters a-Z are allowed in commands!", "invalid_characters");
 
-  let command = null;
+    if (!is_initilized)
+        return error(`The command ahndler was not initlized!`, "not_init");
 
-  command = getCommand(cmd);
+    if (!isCommand(cmd))
+        return error(`Invalid command ${cmd}!`, "invalid_command");
+    
+    let cmd_info = info(cmd);
+    
+    if (!cmd_info.enabled)
+        return error(`Command ${cmd} is currently disabled!`);
 
-  if (command == null) {
-    return util.Error(`Command ${prefix}${cmd} doesnt exist!`, "not_found");
-  }
-
-  if (!command.enabled) {
-    return util.Error(`This command is disabled`, "command_diabled");
-  }
-
-  try {
-    command.execute(username, args, bot, this);
-    return util.Success(`Executed succssfully!`);
-  } catch (err) {
-    console.log(err);
-    return util.Error(`A error occured while executing: ${err.message}`, "execute_error");
-  }
-
+    try {
+        let output = cmd_info.execute(bot, cmd, username, args, this, ...custom);
+        return success(output);
+    } catch (err) {
+        console.log(`Error while executing ${cmd} (args: [${args.join(", ")}])!`);
+        console.log(err.stack);
+        return error(`Error while executing the command!`);
+    }
+    
 }
 
-function reload(cmd) {
-  var c = getCommand(cmd);
-  if(c == null) return util.Error(`The command ${prefix}${cmd} doesnt exist!`);
+function reload(command) {
+    if (!is_initilized)
+        return error(`The command ahndler was not initlized!`, "not_init");
 
-  let path = c.requirePath;
+    if (command == null) {
+        try {
+           Object.keys(commands).forEach(key => {
+                let command = commands[key];
+                delete require.cache[command.path];
+            });
+        } catch (err) {}
+        commands = {};
+        categories = {};
+        load();
+        return success(`successfully reloaded all commands!`);
+    } else {
+        let cmd_info = info(command);
+        if (cmd_info == null)
+            return error(`${this.prefix}${command} doesnt exist or was not loaded before!`);
 
-  if (!fs.existsSync(path) || !fs.statSync(path).isFile())
-    return util.Error(`The command ${prefix}${cmd} doesnt exist!`);
+        try {
+            let path = cmd_info.path;
+            let category = cmd_info.category;
+            let aliases = cmd_info.aliases;
 
-  try {
-    delete require.cache[require.resolve(path)];
-    util.remove(cmds, cmd);
-    cmds.push(require(path));
-    return util.Success(`Successfully reloaded &b${prefix}${cmd}`);
-  } catch (err) {
-    return util.Error(`Couldn't reload ${prefix}${cmd}`, "reload_error");
-  }
+            aliases.forEach(alias => {
+                if (commands[alias] != cmd_info)
+                    return;
+                delete commands[command];
+            });
+            
+            delete commands[cmd_info.name];
+            delete categories[cmd_info.category].commands[cmd_info.name];
+            delete require.cache[cmd_info.path];
 
+            let required = loadCommand(path, category);
+            if (required == null) 
+                return;
+            
+            if (commands[required.name] == null) {
+
+                commands[required.name] = required;
+                categories[required.category].commands[required.name] = required;                
+            }
+                
+                
+            if (required.aliases.length != 0) {
+                required.aliases.forEach(alias => {
+                    if (commands[alias] == null)
+                        commands[alias] = required;
+                });
+            }
+            
+            console.log(8)
+            return success(`Successfully reloaded ${this.prefix}${command}`);
+        } catch (err) {
+            console.log(`Error while realoding ${command}!`);
+            console.log(err.stack);
+            return error(`Couldn't reload ${this.prefix}${command}`, "reload_error");
+        }
+    }
 }
 
-function includesArrForEach(arr, str) {
-  var f = false;
-  arr.forEach((a) => {
-    if (a == str) f = true;
-  });
-  return f;
+
+//utility functions
+function isCommand(command) {
+    return commands[command] != null;
 }
 
-function isValidCommand(command) {
-  return command != null && typeof (command.execute) == "function" && typeof (command.description) == "string" &&
-    typeof (command.usage) == "string" && typeof (command.enabled) == "boolean" && typeof (command.aliases) == "object";
+function info(command) {
+    if (!isCommand(command))
+        return null;
+    return commands[command];
 }
 
-module.exports.getCMDS = () => {return cmds};
+function getCategory(category) {
+    if (categories[category] !=  null && Object.keys(categories[category].commands).length == 0)
+        return null;
+    return categories[category];
+}
 
-module.exports.getCommand = getCommand;
-module.exports.reloadCMDS = reloadCMDS;
-module.exports.setup = setup;
-module.exports.prefix = prefix;
-module.exports.execute = execute;
+function getCategories() {
+    return Object.keys(categories);
+}
+
+function success(message) {
+    return {status:"success", message};
+}
+
+function error(message, code="unknown") {
+    return {status:"error", message, code};
+}
+
+function isFile(filePath) {
+    return fs.existsSync(filePath) && fs.statSync(filePath).isFile();
+}
+
+function isDirectory(filePath) {
+    return fs.existsSync(filePath) && fs.statSync(filePath).isDirectory();
+}
+
+function isValid(command) {
+
+    return command != null && typeof command.execute == "function" && typeof command.name == "string" && typeof command.description == "string" && typeof command.usage == "string" && typeof command.enabled == "boolean" && Array.isArray(command.aliases);
+}
+
+//module.exports
+module.exports = load;
 module.exports.reload = reload;
-module.exports.isValidCommand = isValidCommand;
+module.exports.execute = execute;
+module.exports.isCommand = isCommand;
+module.exports.getCategories = getCategories;
+module.exports.getCategory = getCategory;
+module.exports.info = info;
+module.exports.prefix = "%";
+module.exports.directory = "./commands";

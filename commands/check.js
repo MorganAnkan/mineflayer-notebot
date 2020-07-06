@@ -1,10 +1,18 @@
+var name = "check";
+var aliases = ["canplay"];
+var description = "Check if a song can be played";
+var usage = "{prefix}check <song>";
+var enabled = true;
+
 var util = require("./../util.js");
 
 var parser = require("./../parser.js");
 var mapper = require("./../block-mapper.js");
 var instruments_map = require("./../instruments_map.json");
 
-function execute(username, args, bot, handler) {
+function execute(bot, cmd, username, args, handler) {
+  if (args[0] == null)
+    return bot.chat(util.errorMessage(`Usage: ${usage.replace(/{prefix}/g, handler.prefix)}`));
   var sang = `./songs/${args[0]}` + (args[0].endsWith(".txt") ? "" : ".txt");
   let info = parser.songInfo(sang);
   if (info == null) {
@@ -61,10 +69,9 @@ function execute(username, args, bot, handler) {
 
 }
 
-module.exports = {
-  aliases: ["check", "canplay"],
-  description: "Check if a song can be played",
-  usage: "{prefix}check <song>",
-  enabled: true,
-  execute: execute
-}
+module.exports.name = name;
+module.exports.aliases = aliases;
+module.exports.description = description;
+module.exports.usage = usage;
+module.exports.enabled = enabled;
+module.exports.execute = execute;

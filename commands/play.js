@@ -1,8 +1,14 @@
+var name = "play";
+var aliases = ["p"];
+var description = "Play a notebot song";
+var usage = "{prefix}play <song>";
+var enabled = true;
+
 var blockmapper = require("./../block-mapper.js");
 var parser = require("./../parser.js");
 var util = require("./../util.js");
 
-function execute(username, args, bot, handler) {
+function execute(bot, cmd, username, args, handler) {
 	if(args.length == 0) {
 		bot.chat(util.errorMessage(`Usage: ${handler.prefix}play <song>`));
 		return;
@@ -59,10 +65,9 @@ function execute(username, args, bot, handler) {
 
 }
 
-module.exports = {
-	aliases: ["play", "p"],
-	description: "Play a notebot song",
-	usage: "{prefix}play <song>",
-	enabled: true,
-	execute: execute
-}
+module.exports.name = name;
+module.exports.aliases = aliases;
+module.exports.description = description;
+module.exports.usage = usage;
+module.exports.enabled = enabled;
+module.exports.execute = execute;

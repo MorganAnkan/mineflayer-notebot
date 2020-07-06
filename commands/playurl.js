@@ -1,3 +1,9 @@
+var name = "playurl";
+var aliases = ["purl","pu"];
+var description = "Play a url instead of a file";
+var usage = "{prefix}playurl <url>";
+var enabled = true;
+
 var util = require("./../util.js");
 var parser = require("./../parser.js");
 var config = require("./../config.json");
@@ -7,7 +13,7 @@ var toNotebot = require("./../miditonotebot").toNotebot;
 var fs = require("fs");
 var path = require("path");
 
-function execute(username, args, bot, handler) {
+function execute(bot, cmd, username, args, handler) {
     if (args.length == 0) {
         return bot.chat(util.errorMessage(`Usage: ${handler.prefix}playurl <url>`));
     }
@@ -76,10 +82,9 @@ function tryDownload(url, bot, username) {
     });
 }
 
-module.exports = {
-    aliases: ["playurl", "purl", "pu"],
-    description: "Play a url instead of a file",
-    usage: "{prefix}playurl <url>",
-    enabled: true,
-    execute: execute
-}
+module.exports.name = name;
+module.exports.aliases = aliases;
+module.exports.description = description;
+module.exports.usage = usage;
+module.exports.enabled = enabled;
+module.exports.execute = execute;

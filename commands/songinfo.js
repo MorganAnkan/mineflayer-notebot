@@ -1,9 +1,15 @@
+var name = "songinfo";
+var aliases = ["si"];
+var description = "Prints songinfo in chat";
+var usage = "{prefix}songinfo <song>";
+var enabled = true;
+
 var util = require("./../util.js");
 
 var parser = require("./../parser.js");
 var instruments_map = require("./../instruments_map.json");
 
-function execute(username, args, bot, handler) {
+function execute(bot, cmd, username, args, handler) {
   if (args.length == 0)
     return bot.chat(util.infoMessage(`Usage: ${handler.prefix}songinfo <song>`));
 
@@ -35,10 +41,9 @@ length ---> 1500 (length of the song in ticks)
 
 }
 
-module.exports = {
-  aliases: ["songinfo", "si"],
-	description: "Prints songinfo in chat",
-	usage: "{prefix}songinfo <song>",
-	enabled: true,
-	execute: execute
-}
+module.exports.name = name;
+module.exports.aliases = aliases;
+module.exports.description = description;
+module.exports.usage = usage;
+module.exports.enabled = enabled;
+module.exports.execute = execute;
