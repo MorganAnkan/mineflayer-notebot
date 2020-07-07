@@ -5,6 +5,12 @@ function colors(message) {
   return (config.settings.colors_enabled) ? message/*.replace(/&/g, "§")*/ : message.replace(/&[0-9a-fk-or]/g, "");
 }
 
+function firstLetterUppercase(s) {
+  if(s == undefined) return "";
+  s = typeof s !== "string" ? s.toString() : s;
+  return s.charAt(0).toUpperCase()+s.slice(1);
+}
+
 function infoMessage(message) {
   return colors(`&9INFO: &7${message}`);
 }
@@ -45,5 +51,6 @@ module.exports = {
 	clone: clone,
   Error: Error,
   Success: Success,
-  remove: remove
+  remove: remove,
+  firstLetterUppercase: firstLetterUppercase
 };

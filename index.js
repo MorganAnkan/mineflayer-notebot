@@ -70,11 +70,9 @@ bot.on("chat", (username, message) => {
     let command = args.shift().slice(cmd_handler.prefix.length);
     
     let output = cmd_handler.execute(command, username, args, bot);
-
     if (output.status == "error") {
       let error = output.message;
       //let code = output.code;
-
       bot.chat(util.errorMessage(error));
     }
   }
