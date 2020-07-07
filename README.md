@@ -1,43 +1,58 @@
 # mineflayer-notebot
-a minecraft bot that can play most if not all .mid files from a direct download link can also play songs from the wwe client notebot format
 
--=-{Installation Guide}-=-
+A minecraft bot that can play most if not all .mid files from a **direct** download link. The bot can also play songs from the wwe client notebot format.
 
-Click the big green button which says "Code"
+## Installation
 
-Using git:
+1. Download npm and [nodejs](https://nodejs.org/en/download/) then install both softwares.
+2. Download mineflayer-notebot by clicking the the green button which says "Code" or by clicking [here](https://github.com/MorganAnkan/mineflayer-notebot/archive/master.zip).
+3. Extract the .zip file you downloaded.
+4. Install dependecies using this command in command prompt:
 
-Go to clone and under Clone with HTTPS copy the link
+```bash
+cd C:/to/the/directory/where/thedownloadedproject/is
+npm install mineflayer @tonejs/midi
+```
 
-Open command prompt and use Cd to go to your desired location to install
+## Usage
 
-Type in "Git clone (Link you copyed)" and press enter
-
-Using download:
-
-Click download zip then extract it
-
-Use Cd to go to the new folder it created and run "npm i mineflayer @tonejs/midi"
-
-And the installation is done
-
--=-{How To Use}-=-
-
-Cd to the folder that everything is in and run "node index.js"
-
-The bot should join the server on your local host see extra info on how to change the IP and Port it connects to
-
-Run "%songinfo (song name)" to get the types of blocks under the noteblocks required to play the song and place them withing a 4 block radius of the bot
-
-Do "%songs" to see the built in songs and do "%play (song name)" to play the song
-
-Do "%playurl (the url of the download link of the song you want from https://bitmidi.com/)" for example "%playurl https://bitmidi.com/uploads/104840.mid" For Astronomia / Coffin dance meme
-
--=-{Extra Info}-=-
-
-Edit the config.json file to suit your needs
+#### *Some important commands*:
+ - `%playurl <direct .mid/.midi download link>`
+ - plays midi files from a url [bitmidi](https://bitmidi.com/) is a pretty popular website for midi files but it isnt limited to only bitmidi a simple example: `%playurl https://bitmidi.com/uploads/104840.mid` should start to play Astronomia / Coffin dance meme
+ - `%play <premade song>`
+ - plays wwe format songs the bot is based on the wwe format so it can play basically anything from wwe clients notebot (**not .nbs files**) simple example: `%play nyancat` should start to play Nyancat
+ - `%songs`
+ - lists all premade songs in chat
+ - `%help`
+ - more info about all commands
 
 
+## Config
 
-
-Made by MorganAnkan & TheCosmic04 using Mineflayer
+```js
+{
+  "bot": {
+    "username": "notebot",// username of the bot (only cracked currently)
+    "host": "localhost",// ip of the server the bot will connect to
+    "port": 25565 // port of the server the bot will connect to
+  },
+  "settings": {
+    "tune_speed": 80,// at which interval the bot will tune in
+    "colors_enabled": false,// if the server supports "&" color codes this makes chat more pretty
+    "save_downloaded_songs": false,// save downloaded songs in notebot format in ./songs/
+    "max_download_bytes": 10485760// max size for the %playurl midi file in bytes
+  },
+  "commands_perms": [// permission for higher level commands
+    "The_Cosmic_",
+    "MorganAnkan"
+  ],
+  "eval": {
+    "perms": [// permission for eval
+      "The_Cosmic_",
+      "MorganAnkan"
+    ],
+    "enabled": false// WARNING: THIS IS VERY DANGEROUS TO LEAVE TRUE EVEN WITH THE PERMISSION SYSTEM
+                    // DO NOT EDIT THIS IF YOU DONT KNOW WHAT YOU ARE DOING
+  }
+}
+```
