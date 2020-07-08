@@ -145,9 +145,8 @@ function reload(command) {
       let aliases = cmd_info.aliases;
 
       aliases.forEach(alias => {
-        if (commands[alias] != cmd_info)
-          return;
-        delete commands[command];
+        if (commands[alias] == cmd_info)
+          delete commands[alias];
       });
 
       delete commands[cmd_info.name];
