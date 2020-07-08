@@ -171,7 +171,6 @@ function reload(command) {
         });
       }
 
-      console.log(8)
       return success(`Successfully reloaded ${this.prefix}${command}`);
     } catch (err) {
       console.log(`Error while realoding ${command}!`);
