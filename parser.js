@@ -157,7 +157,10 @@ function tuneNoteblocks(file, noteblocks_1, instruments_enabled = false, callbac
   if(callback == null) callback = function(res, err) {if(res){console.log(res)} if(err){console.log(err)} };
 
   if (!isValidFile(file)) {
-		callback(undefined, `${file} appears to be a invalid notebot file maybe try ${handler.prefix}playurl`);
+    if(file.toString().startsWith("http")) {
+      callback(undefined, `${file} appears to be a invalid notebot file, try ${handler.prefix}playurl`);
+    }
+		callback(undefined, `The file ${file} could not be found!`);
     tuning = false;
     resetNowPlaying();
 		return;
