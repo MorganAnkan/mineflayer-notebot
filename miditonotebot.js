@@ -7,9 +7,27 @@ var compiledTracks = [];
 var timeConstant = (5 / 3) * 12;// 20
 var midi;
 
+const instrumentOffsets = [
+    54, //harp
+    0, //basedrum
+    0, //snare
+    0, //hat
+    30, //bass
+    66, //flute
+    78, //bell
+    42, //guitar
+    78, //chime
+    78, //xylophone
+    54, //iron xylophone
+    66, //cow bell
+    30, //didgeridoo
+    54, //bit
+    54, //banjo
+    54, //electric piano
+];
+
 /*
 Note structure:
-
 {
     midi: 70,
     velocity: 0.7559055118110236,
@@ -65,7 +83,7 @@ function toNotebot(midiFile, cb) {
 module.exports.toNotebot = toNotebot;
 
 function isPercussion(channel) {
-    return channel == 10; //channel 10 reserved for percussion
+    return channel == 9; //channel 10 reserved for percussion
 }
 
 function compileMIDI(midi) {
@@ -85,7 +103,7 @@ function compileMIDI(midi) {
         // then loop through again to compile
         if (curInstrument !== null) {
             for (var j = 0; j < midi.tracks[i].notes.length; j++) {
-                var curInstrument = getMinecraftInstrument(midi.tracks[i].instrument.number, midi.tracks[i], 0, midi.tracks[i].notes[i] == undefined ? undefined : midi.tracks[i].notes[i].midi);
+                var curInstrument = getMinecraftInstrument(midi.tracks[i].instrument.number, midi.tracks[i], 0, midi.tracks[i].notes[j] == undefined ? undefined : midi.tracks[i].notes[j].midi);
                 compileNoteFromTrack(i, j, curInstrument);
             }
         }
@@ -118,15 +136,20 @@ function compileNoteFromTrack(trackNum, curNote, curInstrument) {
 function convertNote(noteVal, midiTrack) {
     if(isPercussion(midiTrack.channel)) return 0;
 
-    if(noteVal >= 30 && noteVal <= 54) {
-        return noteVal - 30;
-    } else if(noteVal >= 54 && noteVal <= 78) {
-        return noteVal - 54;
-    } else if(noteVal >= 78 && noteVal <= 102) {
-        return noteVal - 78;
-    } else {
-        return 0; // deafult to 0 if unknown
+    if (instrumentOffsets[instrumentVal] == 0) {
+        console.log("tried to tune a percussion instrument (this shouldn't happen)");
     }
+
+    noteVal -= instrumentOffsets[instrumentVal];
+    if (noteVal < 0) {
+        noteVal = (noteVal + 25*10) % 25;
+        console.log("note looped over on negative side (this shouldn't happen)");
+    }
+    if (noteVal > 24) {
+        noteVal %= 25;
+        console.log("note looped over on positive side (this shouldn't happen)");
+    }
+    return noteVal;
 
 }
 
@@ -163,7 +186,7 @@ function getMinecraftInstrument(instrumentNumber, midiTrack, drumNoteNumber, mid
 
     //normal midi instruments https://jazz-soft.net/demo/GeneralMidi.html
 
-    var MCInstrument = 0;
+    var MCInstrument = undefined;
 
     if (midiPitch != undefined) {//TODO: make this a bit smaller/less if statements
 
@@ -320,10 +343,9 @@ function getMinecraftInstrument(instrumentNumber, midiTrack, drumNoteNumber, mid
             } else if (midiPitch >= 78 && midiPitch <= 102) {//high (bells, chimes, xylophone)
                 MCInstrument = 0;
             }
-
         }*/ // very unlikley to see in a midi file so just be harp...
     }
 
-    // default to harp if nothing found
-    return MCInstrument; //harp
+    // default to undefined if nothing found
+    return MCInstrument;
 }
